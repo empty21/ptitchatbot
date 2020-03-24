@@ -19,7 +19,7 @@ Làm theo hướng dẫn [link này](https://developers.facebook.com/docs/messen
 4.  Chạy lệnh pm2 run app để chạy app
 5.  (Tuỳ Chọn) Cấu hình Nginx pass proxy qua cổng SERVER_PORT
 #### Cấu hình webhook
--   **Callback URL** là https//SERVER_DOMhookwebhook
+-   **Callback URL** là https//SERVER_DOMAIN/webhook
 -   **Verify Token** là WEBHOOK_VERIFY_TOKEN
 -   **Subscription Fields** tích chọn messages, messaging_postbacks, message_reads
 #### All Done! Chatbot đã được cài đặt thành công
