@@ -1,0 +1,15 @@
+{
+  "SERVER_PORT" : "8888",
+  "SERVER_DOMAIN": "",
+  "SECRET_KEY": "",
+  "DB_CONNECT": "mongodb://localhost/chatbot",
+  "PAGE_ACCESS_TOKEN": "",
+  "WEBHOOK_VERIFY_TOKEN": "",
+  "PERSONA": {
+    "ADMIN": "",
+    "MEMBER": "516579809058426",
+    "SUPPORTER": "573248086612442"
+  },
+  "TIME_TO_REMATCH": 3600,
+  "FILTER": ["địt", "cứt", "lồn", "cặc"]
+}
