@@ -143,8 +143,10 @@ async function receivedPostback(data, user) {
 async function receivedSeen(data, user) {
   if(user.status === "PAIRED") {
     let session = await Session.getUserSession(user);
-    let partner = await Session.getPartner(user,session);
-    await markSeen(partner.id);
+    if(session) {
+      let partner = await Session.getPartner(user,session);
+      await markSeen(partner.id);
+    }
   }
 }
 
