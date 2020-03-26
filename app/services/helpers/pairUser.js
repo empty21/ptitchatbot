@@ -1,11 +1,11 @@
 "use strict";
 
 const {User,Session,Log} = require("../database");
-const {button} = require("../../../config/message");
-const {sendBotMessage} = require("./sendMessage");
+const msgConfig = require("../../../config/message");
+const {sendGenericTemplate} = require("./sendMessage");
 
 async function randomPair(user) {
-  await sendBotMessage("Finding", "Đang tìm đối", user.id);
+  await sendGenericTemplate([{title: "Finding...", subtitle: "Đang tìm đối"}], user.id);
   let usersToPair = await User.getUserToPair(user);
   if(usersToPair.length === 0) {
     User.changeUserStatus("FINDING", user);
@@ -14,8 +14,8 @@ async function randomPair(user) {
     await Session.addSession(user, randomUser);
     User.changeUserStatus("PAIRED", user);
     User.changeUserStatus("PAIRED", randomUser);
-    sendBotMessage("Matched", "Ghép cặp thành công!", user.id);
-    sendBotMessage("Matched", "Ghép cặp thành công!", randomUser.id).catch(()=>{});
+    sendGenericTemplate([{title: "Matched", subtitle: "Ghép cặp thành công!\nHãy say hi với đối của bạn"}], user.id);
+    sendGenericTemplate([{title: "Matched", subtitle: "Ghép cặp thành công!\nHãy say hi với đối của bạn"}], randomUser.id).catch(()=>{});
   }
 }
 async function unPair(user) {
@@ -25,8 +25,8 @@ async function unPair(user) {
   User.changeUserStatus("FREE", user);
   User.changeUserStatus("FREE", partner);
   session.remove();
-  sendBotMessage("Bạn đã huỷ ghép đôi", "Bạn có thể tìm người mới!", user.id, button.FIND);
-  sendBotMessage("Đối phương đã huỷ ghép đôi", "Chia buồn!", partner.id, button.FIND).catch(()=>{});
+  sendGenericTemplate([{title: "Bạn đã huỷ ghép đôi", subtitle: "Bạn có thể tìm người mới!"}], user.id, {quick_replies: msgConfig.quick_replies.FIND});
+  sendGenericTemplate([{title: "Đối phương đã huỷ ghép đôi", subtitle: "Chia buồn!"}], partner.id, {quick_replies: msgConfig.quick_replies.FIND}).catch(()=>{});
 }
 module.exports = {
   randomPair,

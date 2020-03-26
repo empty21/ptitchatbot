@@ -1,157 +1,172 @@
 "use strict";
 
 module.exports = {
-  "message": {
+  generic_template: {
     /*
-     *
+     START MESSAGE
      */
-    "START": {
-      "title": "Chào mừng bạn đến với PTIT Chatbot",
-      "subtitle": "Mời bạn nhấn ❓ Help hoặc chat /help để biết cách sử dụng"
-    },
+    START: [
+      {
+        title: "Chào mừng bạn đến với PTIT Chatbot",
+        subtitle: "Mời bạn nhấn ❓ Help hoặc chat /help để biết cách sử dụng",
+        image_url: "https://ptitchatbot.me/img/logo.png"
+      },
+      {
+        title: "Thoả thuận sử dụng",
+        subtitle: "Bằng cách sử dụng Chatbot, bạn đã đồng ý với những điều khoản của Chatbot",
+        image_url: "https://surchdigital.com/wp-content/uploads/2018/02/terms-of-service-text.png",
+        buttons: [
+          {
+            type: "web_url",
+            url: "https://ptitchatbot.me/terms.pdf",
+            title: "Đọc điều khoản"
+          }
+        ]
+      }
+    ],
     /*
-     *
+     REPORT MESSAGE
      */
-    "TERM": {
-      "title": "Thoả thuận sử dụng",
-      "subtitle": "Bằng cách sử dụng Chatbot, bạn đã đồng ý với những điều khoản của Chatbot"
-    },
+    REPORT_ASK: [
+      {
+        title: "Mời bạn nhập nội dung report",
+        subtitle: "Nếu ấn nhầm thì ấn huỷ"
+      }
+    ],
+    REPORT_CONFIRM: [
+      {
+        title: "Chúng tôi đã ghi nhận trường hợp này",
+        subtitle: "Chúng tôi sẽ kiểm tra và phản hồi.\n" +
+          "Cảm ơn bạn"
+      }
+    ],
+    END_ASK: [
+      {
+        title: "Bạn có chắc chắn muốn kết thúc chat?",
+        subtitle: "Nếu không thì bỏ qua và tiếp tục chat"
+      }
+    ],
+    GENDER_ASK: [
+      {
+        title: "Bạn muốn đối của mình là: ",
+        subtitle: "Chọn 1 trong 3"
+      }
+    ],
+    CANCEL_ACTION: [
+      {
+        title: "Bạn đã huỷ hành động",
+        subtitle: "Chúc bạn có một trải nghiệm tốt"
+      }
+    ],
     /*
-     *
+     * RESPONSE WHEN SEND FAILED
      */
-    "REPORT_ASK": {
-      "title": "Mời bạn nhập nội dung report",
-      "subtitle": "Nếu ấn nhầm thì ấn huỷ"
-    },
-    "REPORT_CONFIRM": {
-      "title": "Chúng tôi đã ghi nhận trường hợp này",
-      "subtitle": "Chúng tôi sẽ kiểm tra và phản hồi.\n" +
-        "Cảm ơn bạn"
-    },
-    "CANCEL_ACTION": {
-      "title": "Bạn đã huỷ hành động",
-      "subtitle": "Chúc bạn có một trải nghiệm tốt"
-    },
+    SEND_FAIL: [
+      {
+        title: "Không thể gửi tin nhắn tới đối",
+        subtitle: "Có thể đối đã chặn tin nhắn hoặc đối đã không nhắn tin tới page trong 24h qua"
+      }
+    ],
+
+  },
+  /*
+   * MESSAGE TYPE TEXT
+   */
+  "text": {
     /*
-     * CALENDAR
+     * HELP MESSAGE RESPONSE
      */
-    "CALENDAR_ASK": {
-      "title": "Mời bạn nhập mã sinh viên",
-      "subtitle": "Nếu ấn nhầm thì ấn huỷ"
-    },
-    "CALENDAR_CONFIRM": {
-      "title": "Sinh viên: ",
-      "subtitle": "Đây là file lịch học của bạn\n" +
-        "Bạn có thể nhập nó vào ứng dụng Calendar"
-    },
-    "CALENDAR_FAIL": {
-      "title": "Lấy lịch học không thành công",
-      "subtitle": "Sai mã sinh viên"
-    },
-    "SEND_FAIL": {
-      "title": "Không thể gửi tin nhắn tới đối",
-      "subtitle": "Có thể đối đã chặn tin nhắn hoặc 24h rồi các bạn không nói chuyện"
-    },
-    /*
-     *
-     */
-    "HELP": "Danh sách lệnh: \n"+
-      " - /gender\n"+
+    HELP: "Danh sách lệnh: \n"+
+      " /gender\n"+
       " --> Chọn giới tính của đối\n"+
-      " - /find\n" +
+      " /find\n" +
       " --> Tìm người ghép cặp\n" +
-      " - /end\n" +
+      " /end\n" +
       " --> Kết thúc session chat\n" +
-      " - /help\n" +
+      " /help\n" +
       " --> Hiện help menu\n" +
-      " - /info\n" +
+      " /info\n" +
       " --> Hiện thông tin tài khoản của bạn\n" +
-      " - /report\n" +
+      " /report\n" +
       " --> Chức năng report\n"
   },
-  "button": {
-    "FIND": [{
-      "type": "postback",
-      "title": "Tìm đối mới",
-      "payload": "FIND"
-    }],
-    /*
-     *
-     */
-    "CANCEL_FIND": [{
-      "type": "postback",
-      "title": "Huỷ tìm đối",
-      "payload": "END"
-    }],
-    /*
-     *
-     */
-    "END": [{
-      "type": "postback",
-      "title": "Kết thúc chat",
-      "payload": "END"
-    }],
-    /*
-     *
-     */
-    "START": [
+  quick_replies: {
+    START: [
       {
-        "type": "postback",
-        "title": "❓ Help",
-        "payload": "HELP"
+        content_type: "text",
+        title: "❓ Help",
+        payload: "HELP"
       },
       {
-        "type": "postback",
-        "title": "Chọn giới tính đối",
-        "payload": "SELECT_GENDER"
+        content_type: "text",
+        title: "Chọn giới tính đối",
+        payload: "SELECT_GENDER"
       },
       {
-        "type": "postback",
-        "title": "Tìm đối nuôn",
-        "payload": "FIND"
+        content_type: "text",
+        title: "Tìm đối luônn",
+        payload: "FIND"
       }
     ],
-    /*
-     *
-     */
-    "TERM":[
+    SELECT_GENDER: [
       {
-        "type":"web_url",
-        "url":"https://ptitchatbot.me/terms.pdf",
-        "title":"Điều khoản dịch vụ"
-      }
-    ],
-    /*
-     *
-     */
-    "CANCEL_ACTION": [
-      {
-        "type": "postback",
-        "title": "Huỷ",
-        "payload": "CANCEL_ACTION"
-      }
-    ],
-    "SELECT_GENDER": [
-      {
-        "type": "postback",
-        "title": "Nam",
-        "payload": "GENDER_MALE"
+        content_type: "text",
+        title:"Nam",
+        payload:"SELECT_GENDER_MALE",
       },
       {
-        "type": "postback",
-        "title": "Nữ",
-        "payload": "GENDER_FEMALE"
+        content_type: "text",
+        title:"Nữ",
+        payload:"SELECT_GENDER_FEMALE",
       },
       {
-        "type": "postback",
-        "title": "Tất cả",
-        "payload": "GENDER_ALL"
+        content_type: "text",
+        title:"Tất cả",
+        payload:"SELECT_GENDER_ALL",
+      }
+    ],
+    CANCEL_ACTION: [
+      {
+        content_type: "text",
+        title: "Huỷ",
+        payload: "CANCEL_ACTION"
+      }
+    ],
+    FIND: [
+      {
+        content_type: "text",
+        title: "Tìm đối mới",
+        payload: "FIND"
+      }
+    ],
+    CANCEL_FIND: [
+      {
+        content_type: "text",
+        title: "Huỷ tìm đối",
+        payload: "END_REQUEST"
+      }
+    ],
+    END_ASK: [
+      {
+        content_type: "text",
+        title: "Kết thúc chat",
+        payload: "END_REQUEST"
+      }
+    ],
+    END_CONFIRM: [
+      {
+        content_type: "text",
+        title: "Xác nhận",
+        payload: "END_CONFIRM"
       }
     ]
   },
-  "gender_vi": {
-    "male": "Nam",
-    "female": "Nữ",
-    "all": "Tất cả"
+  /*
+   * Phiên âm tiếng Việt =)))
+   */
+  gender_vi: {
+    male: "Nam",
+    fle: "Nữ",
+    all: "Tất cả"
   }
 };

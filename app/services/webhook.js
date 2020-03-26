@@ -1,114 +1,140 @@
 "use strict";
 
 const {filterMessage} = require("./helpers").tools;
-const {message,button,gender_vi} = require("../../config/message");
+const msgConfig = require("../../config/message");
 const {User, Report, Session} = require("./database");
-const {sendBotMessage, sendTextMessage, sendAttachment,markSeen} = require("./helpers").sendMessage;
+const {sendGenericTemplate, sendTextMessage, sendAttachment,markSeen} = require("./helpers").sendMessage;
 const {receivedFindRequest,receivedEndRequest,receivedReportRequest} = require("./helpers").processRequests;
+const {unPair} = require("./helpers").pairUser;
 
-async function receivedMessage(data, user) {
-  if(data.text) {
-    if(data.text.charAt(0) !== "#") {
-      switch (data.text.toLowerCase()) {
-        case "/find":
-          await receivedFindRequest(user);
-          break;
-        case "/end":
-          await receivedEndRequest(user);
-          break;
-        case "/gender":
-          await sendBotMessage("Bạn thích giới tính nào", "Chọn 1 trong 3", user.id, button.SELECT_GENDER);
-          break;
-        case "/report":
-          await receivedReportRequest(user);
-          break;
-        case "/help":
-          await sendTextMessage(message.HELP, user.id, config.PERSONA.SUPPORTER);
-          break;
-        case "/info":
-          await sendBotMessage(user.name, "Giới tính: " + gender_vi[user.gender] + "\nThích: " + gender_vi[user.partner_gender], user.id);
-          break;
-        default:
-          if (user.temp_action) {
-            switch (user.temp_action) {
-              case "REPORT":
-                User.changeUserTempAction(null, user);
-                Report.createReport(user, data.text);
-                sendBotMessage(message.REPORT_CONFIRM.title, message.REPORT_CONFIRM.subtitle, user.id);
-                break;
-              default:
-                break;
-            }
-          } else if (user.status === "PAIRED") {
-            let session = await Session.getUserSession(user);
-            let partner = await Session.getPartner(user, session);
-            let text = await filterMessage(data.text);
-            await sendTextMessage(text, partner.id, config.PERSONA[user.role])
-              .catch(() => sendBotMessage(message.SEND_FAIL.title, message.SEND_FAIL.subtitle, user.id, button.END));
+async function receivedTextMessage(data, user) {
+  if(data.charAt(0) !== "#") {
+    let message = {}, options = {};
+    switch (data.toLowerCase()) {
+      case "/find":
+        await receivedFindRequest(user);
+        break;
+      case "/end":
+        await receivedEndRequest(user);
+        break;
+      case "/report":
+        await receivedReportRequest(user);
+        break;
+      case "/gender":
+        options.quick_replies = msgConfig.quick_replies.SELECT_GENDER;
+        await sendGenericTemplate(msgConfig.generic_template.GENDER_ASK,user.id, options);
+        break;
+      case "/help":
+        options.persona = config.PERSONA.SUPPORTER;
+        if(user.status === "FREE") options.quick_replies = msgConfig.quick_replies.FIND;
+        await sendTextMessage(msgConfig.text.HELP, user.id, options);
+        break;
+      case "/info":
+        message = {
+          "title": "Người dùng: "+user.name,
+          "subtitle": "Giới tính: " + msgConfig.gender_vi[user.gender] + "\nThích: " + msgConfig.gender_vi[user.partner_gender]
+        };
+        await sendGenericTemplate([message], user.id);
+        break;
+      default:
+        if (user.temp_action) {
+          switch (user.temp_action) {
+            case "REPORT":
+              User.changeUserTempAction(null, user);
+              Report.createReport(user, data);
+              await sendGenericTemplate(msgConfig.generic_template.REPORT_CONFIRM, user.id, {persona: config.PERSONA.SUPPORTER});
+              break;
+            default:
+              break;
           }
-          break;
-      }
-    }
-  }
-  if(data.attachments) {
-    if(user.status === "PAIRED") {
-      let session = await Session.getUserSession(user);
-      let partner = await Session.getPartner(user,session);
-      data.attachments.forEach((attachment) => {
-        let validType = ["image","audio","video","file"];
-        if(validType.some(type => type === attachment.type)) {
-          let messageData = {
-            "type": attachment.type,
-            "payload": {
-              "url": attachment.payload.url
-            }
-          };
-          sendAttachment(messageData, partner.id, config.PERSONA[user.role])
-            .catch(() => sendBotMessage("Không thể gửi tệp đính kèm", message.SEND_FAIL.subtitle, user.id));
+        } else if (user.status === "PAIRED") {
+          let session = await Session.getUserSession(user);
+          let partner = await Session.getPartner(user, session);
+          let text = await filterMessage(data);
+          options.persona = config.PERSONA[user.role];
+          sendTextMessage(text, partner.id, options)
+            .catch(() => {
+              sendGenericTemplate(msgConfig.generic_template.SEND_FAIL, user.id,{quick_replies: msgConfig.quick_replies.END_ASK});
+            });
         }
-      });
+        break;
     }
   }
 }
+async function receivedAttachments(data, user) {
+  if(user.status === "PAIRED") {
+    let session = await Session.getUserSession(user);
+    let partner = await Session.getPartner(user,session);
+    data.forEach((attachment) => {
+      let validType = ["image","audio","video","file"];
+      if(validType.some(type => type === attachment.type)) {
+        let messageData = {
+          "type": attachment.type,
+          "payload": {
+            "url": attachment.payload.url
+          }
+        };
+        let options = {
+          persona: config.PERSONA[user.role]
+        };
+        sendAttachment(messageData, partner.id, options)
+          .catch(() => sendGenericTemplate(msgConfig.generic_template.SEND_FAIL, user.id));
+      }
+    });
+  }
+}
 async function receivedPostback(data, user) {
+  let message, options = {};
   switch (data.payload) {
     case "START_BOT":
-      await sendBotMessage(message.START.title, message.START.subtitle, user.id, button.START);
-      await sendBotMessage(message.TERM.title, message.TERM.subtitle, user.id, button.TERM);
+      await sendGenericTemplate(msgConfig.generic_template.START, user.id,{quick_replies: msgConfig.quick_replies.START});
       break;
     case "HELP":
-      await sendTextMessage(message.HELP, user.id, config.PERSONA.SUPPORTER);
+      options.persona = config.PERSONA.SUPPORTER;
+      if(user.status === "FREE") options.quick_replies = msgConfig.quick_replies.FIND;
+      await sendTextMessage(msgConfig.text.HELP, user.id, options);
       break;
     case "REPORT":
       await receivedReportRequest(user);
       break;
-    case "CANCEL_ACTION":
-      User.changeUserTempAction(null, user);
-      sendBotMessage(message.CANCEL_ACTION.title,message.CANCEL_ACTION.subtitle, user.id);
-      break;
     case "FIND":
       await receivedFindRequest(user);
       break;
-    case "END":
+    case "END_REQUEST":
       await receivedEndRequest(user);
       break;
+    case "END_CONFIRM":
+      if(user.status === "PAIRED") await unPair(user);
+      break;
     case "SELECT_GENDER":
-      await sendBotMessage("Bạn thích giới tính nào","Chọn 1 trong 3", user.id, button.SELECT_GENDER);
+      options.quick_replies = msgConfig.quick_replies.SELECT_GENDER;
+      await sendGenericTemplate(msgConfig.generic_template.GENDER_ASK,user.id, options);
       break;
-    case "GENDER_MALE":
+    case "SELECT_GENDER_MALE":
+      if(user.status === "FREE") options.quick_replies = msgConfig.quick_replies.FIND;
       await User.selectPartnerGender(user,"male");
-      await sendBotMessage("Bạn đã chọn: Nam","Đối của bạn sẽ là một bạn nam", user.id, button.FIND);
+      await sendGenericTemplate([{title: "Bạn đã chọn: Nam", subtitle: "Đối của bạn sẽ là một bạn nam"}], user.id, options);
       break;
-    case "GENDER_FEMALE":
+    case "SELECT_GENDER_FEMALE":
+      if(user.status === "FREE") options.quick_replies = msgConfig.quick_replies.FIND;
       await User.selectPartnerGender(user,"female");
-      await sendBotMessage("Bạn đã chọn: Nữ","Đối của bạn sẽ là một bạn nữ", user.id, button.FIND);
+      await sendGenericTemplate([{title: "Bạn đã chọn: Nữ", subtitle: "Đối của bạn sẽ là một bạn nữ"}], user.id, options);
       break;
-    case "GENDER_ALL":
+    case "SELECT_GENDER_ALL":
+      if(user.status === "FREE") options.quick_replies = msgConfig.quick_replies.FIND;
       await User.selectPartnerGender(user,"all");
-      await sendBotMessage("Bạn đã chọn: Tất cả","Đối của bạn sẽ là bất kì giới tính nào", user.id, button.FIND);
+      await sendGenericTemplate([{title: "Bạn đã chọn: Tất cả", subtitle: "Đối của bạn có thể là nữ hoặc nam"}], user.id, options);
+      break;
+    case "CANCEL_ACTION":
+      User.changeUserTempAction(null, user);
+      await sendGenericTemplate(msgConfig.generic_template.CANCEL_ACTION, user.id);
       break;
     case "INFO":
-      await sendBotMessage(user.name,"Giới tính: "+gender_vi[user.gender]+"\nThích: "+gender_vi[user.partner_gender],user.id);
+      message = [{
+        "title": "Người dùng: "+user.name,
+        "subtitle": "Giới tính: " + msgConfig.gender_vi[user.gender] + "\nThích: " + msgConfig.gender_vi[user.partner_gender]
+      }];
+      await sendGenericTemplate(message, user.id);
       break;
     default:
       break;
@@ -123,7 +149,8 @@ async function receivedSeen(data, user) {
 }
 
 module.exports = {
-  receivedMessage,
+  receivedTextMessage,
+  receivedAttachments,
   receivedPostback,
   receivedSeen
 };

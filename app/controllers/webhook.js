@@ -31,7 +31,14 @@ let receiveMessage = (req,res) => {
       if(await User.existUser(id) === false) await User.newUser(id);
       let user = await User.getUser(id);
       if(webhookEvent.message) {
-        await webhook.receivedMessage(webhookEvent.message, user);
+        if(webhookEvent.message.quick_reply) {
+          await webhook.receivedPostback(webhookEvent.message.quick_reply, user);
+        } else if(webhookEvent.message.text) {
+          await webhook.receivedTextMessage(webhookEvent.message.text, user);
+        }
+        if(webhookEvent.message.attachments) {
+          await webhook.receivedAttachments(webhookEvent.message.attachments, user);
+        }
       }
       if(webhookEvent.postback) {
         await webhook.receivedPostback(webhookEvent.postback, user);

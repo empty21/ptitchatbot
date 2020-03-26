@@ -50,6 +50,11 @@ function addPersistentMenu() {
                 "type": "postback",
                 "title": "☑️ Chọn giới tính",
                 "payload": "SELECT_GENDER"
+              },
+              {
+                "type": "postback",
+                "title": "ℹ️ Thông tin của bạn",
+                "payload": "INFO"
               }
             ]
           },
@@ -57,11 +62,6 @@ function addPersistentMenu() {
             "type": "nested",
             "title": "🎲 Chức năng",
             "call_to_actions": [
-              {
-              "type": "postback",
-              "title": "ℹ️ Thông tin của bạn",
-              "payload": "INFO"
-              },
               {
                 "type": "postback",
                 "title": "❓ Trợ giúp",

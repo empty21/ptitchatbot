@@ -7,7 +7,7 @@ function getUserInfoFacebook(id) {
   return new Promise((resolve, reject) => {
     let url = "https://graph.facebook.com/"+id+"?fields=id,name,gender&access_token="+TOKEN;
     request(url, (err,res,body) => {
-      if(body.error) reject(false);
+      if(err||body.error) reject(false);
       resolve(JSON.parse(body));
     });
   });
@@ -20,7 +20,7 @@ function callSendAPI(messageData) {
       method: 'POST',
       json: messageData
     }, function (err, res, body) {
-      if (err) {
+      if (err||body.error) {
         reject(false);
       }
       resolve(true);

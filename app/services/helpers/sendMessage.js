@@ -3,7 +3,7 @@
 const {callSendAPI} = require("../facebook");
 const {User} = require("../database");
 
-function sendTextMessage(text, id, persona = null) {
+function sendTextMessage(text, id, options = {}) {
   let messageData = {
     "recipient": {
       "id": id
@@ -12,30 +12,32 @@ function sendTextMessage(text, id, persona = null) {
       "text": text
     }
   };
-  if(persona) messageData.persona_id = persona;
+  if(options.persona) messageData.persona_id = options.persona;
+  if(options.quick_replies) messageData.message.quick_replies = options.quick_replies;
   return callSendAPI(messageData);
 }
 
-function sendBotMessage(title, subtitle, id, buttons = null) {
-  let message = {
-    "type": "template",
-    "payload": {
-      "template_type": "generic",
-      "elements": [
-        {
-          "title": title,
-          "subtitle": subtitle
+function sendGenericTemplate(elements, id, options = {}) {
+  let messageData = {
+    "recipient": {
+      "id": id
+    },
+    "message": {
+      "attachment": {
+        "type": "template",
+        "payload": {
+          "template_type": "generic",
+          "elements": elements
         }
-      ]
+      }
     }
   };
-  if(buttons) {
-    message.payload.elements[0].buttons = buttons;
-  }
-  return sendAttachment(message, id);
+  if(options.persona) messageData.persona_id = options.persona;
+  if(options.quick_replies) messageData.message.quick_replies = options.quick_replies;
+  return callSendAPI(messageData);
 }
 
-function sendAttachment(attachment, id, persona = null) {
+function sendAttachment(attachment, id, options = {}) {
   let messageData = {
     "recipient": {
       "id": id
@@ -44,24 +46,26 @@ function sendAttachment(attachment, id, persona = null) {
       "attachment": attachment
     }
   };
-  if(persona) messageData.persona_id = persona;
+  if(options.persona) messageData.persona_id = options.persona;
   return callSendAPI(messageData);
 }
 
 function sendMessageToAllUser(title,subtitle) {
   User.getAllUser()
     .then((result) => {
-    result.forEach(async (user) => {
-      sendBotMessage(title,subtitle, user.id)
-        .catch(error => {});
+    result.forEach((user) => {
+      sendGenericTemplate([{title,subtitle}], user.id)
+        .catch(() => {});
     })
   })
 }
 
 function sendMaintainMessage(id) {
-  let title = "Server đang bảo trì";
-  let body = "Chatbot đang được tạm dừng để nâng cấp\nMời bạn quay lại sau!";
-  return sendBotMessage(title, body, id);
+  let messageData = [{
+    title: "Server đang bảo trì",
+    body: "Chatbot đang được tạm dừng để nâng cấp\nMời bạn quay lại sau!"
+  }];
+  return sendGenericTemplate(messageData, id);
 }
 
 function markSeen(id) {
@@ -77,7 +81,7 @@ function markSeen(id) {
 
 module.exports = {
   sendTextMessage,
-  sendBotMessage,
+  sendGenericTemplate,
   sendAttachment,
   sendMessageToAllUser,
   sendMaintainMessage,
