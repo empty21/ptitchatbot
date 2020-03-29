@@ -15,7 +15,8 @@ async function receivedTextMessage(data, user) {
         await receivedFindRequest(user);
         break;
       case "/end":
-        await receivedEndRequest(user);
+        if(user.status === "PAIRED") await unPair(user);
+        else await receivedEndRequest(user);
         break;
       case "/report":
         await receivedReportRequest(user);
